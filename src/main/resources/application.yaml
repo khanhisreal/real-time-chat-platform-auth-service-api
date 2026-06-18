@@ -1,0 +1,21 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/gcash_chat_platform}
+    username: ${SPRING_DATASOURCE_USERNAME:lucas_admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:SuperSecurePassword2026}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+      enabled: true
+      table: auth_schema_history
+      baseline-on-migrate: true
