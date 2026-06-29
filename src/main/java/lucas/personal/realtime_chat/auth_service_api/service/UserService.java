@@ -1,10 +1,12 @@
 package lucas.personal.realtime_chat.auth_service_api.service;
 
+import io.jsonwebtoken.security.Password;
 import lombok.RequiredArgsConstructor;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserCreateRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.entity.User;
 import lucas.personal.realtime_chat.auth_service_api.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponseDTO createUser(UserCreateRequestDTO request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -27,7 +31,7 @@ public class UserService {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(request.getPassword()) // temporary raw password
+                .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
         User savedUser = userRepository.save(user);
