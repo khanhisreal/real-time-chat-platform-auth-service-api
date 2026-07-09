@@ -1,6 +1,5 @@
 package lucas.personal.realtime_chat.auth_service_api.service;
 
-import io.jsonwebtoken.security.Password;
 import lombok.RequiredArgsConstructor;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserCreateRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
@@ -56,8 +55,9 @@ public class UserService {
 
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(request.getPassword());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
         User updatedUser = userRepository.save(user);
