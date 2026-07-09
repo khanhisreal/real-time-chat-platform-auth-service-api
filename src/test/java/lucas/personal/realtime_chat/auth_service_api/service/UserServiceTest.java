@@ -15,9 +15,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -34,7 +41,7 @@ class UserServiceTest {
     private UserCreateRequestDTO requestDTO;
     private User mockUser;
 
-    private static final String ENCRYPTED_PASSWORD = "$2a$12$5BgSMZJZosmcuGKuhPbCLuu24JJKvNs.s.nQpXYqJFScaFJWXKMlC";
+    private static final String ENCRYPTED_PASSWORD = "encoded-password";
 
     @BeforeEach
     void setUp() {
@@ -150,6 +157,8 @@ class UserServiceTest {
                 .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.encode(updateRequest.getPassword()))
+                .thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenReturn(updatedMockUser);
 
         UserResponseDTO response = userService.updateUser(1L, updateRequest);
@@ -157,6 +166,7 @@ class UserServiceTest {
         assertNotNull(response);
         assertEquals("updated_lucas", response.getUsername());
         assertEquals("updated@gmail.com", response.getEmail());
+        verify(passwordEncoder, times(1)).encode(updateRequest.getPassword());
         verify(userRepository, times(1)).save(mockUser);
     }
 
@@ -184,6 +194,7 @@ class UserServiceTest {
         assertEquals("updated_email@gmail.com", response.getEmail());
 
         verify(userRepository, times(1)).save(mockUser);
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
     @Test
@@ -210,6 +221,7 @@ class UserServiceTest {
         assertEquals("null_email@gmail.com", response.getEmail());
 
         verify(userRepository, times(1)).save(mockUser);
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
     @Test
