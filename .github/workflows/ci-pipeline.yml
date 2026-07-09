@@ -20,4 +20,4 @@ jobs:
           cache: 'maven'
 
       - name: Run Checkstyle, tests, and coverage gate
-        run: ./mvnw -B clean verify
+        run: bash ./mvnw -B clean verify
