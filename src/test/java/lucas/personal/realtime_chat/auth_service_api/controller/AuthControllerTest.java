@@ -1,6 +1,7 @@
 package lucas.personal.realtime_chat.auth_service_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lucas.personal.realtime_chat.auth_service_api.dto.AuthResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.LoginRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.RegisterRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
@@ -42,7 +43,8 @@ class AuthControllerTest {
 
     private RegisterRequestDTO registerRequest;
     private LoginRequestDTO loginRequest;
-    private UserResponseDTO userResponse;
+    private UserResponseDTO mockUser;
+    private AuthResponseDTO userResponse;
 
     @BeforeEach
     void setUp() {
@@ -55,19 +57,25 @@ class AuthControllerTest {
         loginRequest.setUsernameOrEmail("testuser");
         loginRequest.setPassword("password123");
 
-        userResponse = UserResponseDTO.builder()
+        mockUser = UserResponseDTO.builder()
                 .userId(1L)
                 .username("testuser")
                 .email("test@gmail.com")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
+
+        userResponse = AuthResponseDTO.builder()
+                .tokenType("Bearer")
+                .token("mocked.jwt.token")
+                .user(mockUser)
+                .build();
     }
 
     @Test
     @DisplayName("POST /api/v1/auth/register - Should return 201 Created on valid request")
     void register_Success_Returns201() throws Exception {
-        when(authService.register(any(RegisterRequestDTO.class))).thenReturn(userResponse);
+        when(authService.register(any(RegisterRequestDTO.class))).thenReturn(mockUser);
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +122,8 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"));
+                .andExpect(jsonPath("$.token").value("mocked.jwt.token"))
+                .andExpect(jsonPath("$.user.username").value("testuser"));
     }
 
     @Test

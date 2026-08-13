@@ -1,5 +1,6 @@
 package lucas.personal.realtime_chat.auth_service_api.mapper;
 
+import lucas.personal.realtime_chat.auth_service_api.dto.AuthResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,5 +61,33 @@ class UserMapperTest {
         assertThat(response.getEmail()).isEqualTo("test@gmail.com");
         assertThat(response.getCreatedAt()).isNull();
         assertThat(response.getUpdatedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("mapToAuthResponse() - Should correctly map User and JWT token to AuthResponseDTO")
+    void mapToAuthResponse_ShouldMapUserAndTokenCorrectly() {
+        Instant now = Instant.now();
+        User user = User.builder()
+                .userId(42L)
+                .username("khanh_user")
+                .email("khanh@gmail.com")
+                .password("hashed_pass")
+                .build();
+        user.setCreatedAt(now);
+        user.setUpdatedAt(now);
+
+        String mockToken = "eyJhbGciOiJIUzI1NiJ9.mocked.jwt.token";
+
+        AuthResponseDTO authResponse = userMapper.mapToAuthResponse(user, mockToken);
+
+        assertThat(authResponse).isNotNull();
+        assertThat(authResponse.getToken()).isEqualTo(mockToken);
+        assertThat(authResponse.getTokenType()).isEqualTo("Bearer");
+        assertThat(authResponse.getUser()).isNotNull();
+        assertThat(authResponse.getUser().getUserId()).isEqualTo(42L);
+        assertThat(authResponse.getUser().getUsername()).isEqualTo("khanh_user");
+        assertThat(authResponse.getUser().getEmail()).isEqualTo("khanh@gmail.com");
+        assertThat(authResponse.getUser().getCreatedAt()).isEqualTo(now);
+        assertThat(authResponse.getUser().getUpdatedAt()).isEqualTo(now);
     }
 }

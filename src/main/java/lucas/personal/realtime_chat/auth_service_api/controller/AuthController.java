@@ -2,6 +2,7 @@ package lucas.personal.realtime_chat.auth_service_api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lucas.personal.realtime_chat.auth_service_api.dto.AuthResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.LoginRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.RegisterRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
@@ -28,8 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        UserResponseDTO response = authService.login(request);
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        AuthResponseDTO response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 

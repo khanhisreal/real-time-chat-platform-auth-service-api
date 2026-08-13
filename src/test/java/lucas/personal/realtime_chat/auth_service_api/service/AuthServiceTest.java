@@ -1,5 +1,6 @@
 package lucas.personal.realtime_chat.auth_service_api.service;
 
+import lucas.personal.realtime_chat.auth_service_api.dto.AuthResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.LoginRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.RegisterRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
@@ -8,6 +9,7 @@ import lucas.personal.realtime_chat.auth_service_api.exception.InvalidCredential
 import lucas.personal.realtime_chat.auth_service_api.exception.UserAlreadyExistsException;
 import lucas.personal.realtime_chat.auth_service_api.mapper.UserMapper;
 import lucas.personal.realtime_chat.auth_service_api.repository.UserRepository;
+import lucas.personal.realtime_chat.auth_service_api.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,9 @@ class AuthServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private AuthService authService;
@@ -116,14 +121,26 @@ class AuthServiceTest {
     @Test
     @DisplayName("login() - Should successfully log in with correct credentials")
     void login_Success() {
+        String mockToken = "mocked.jwt.token";
+        AuthResponseDTO authResponseDTO = AuthResponseDTO.builder()
+                .token(mockToken)
+                .tokenType("Bearer")
+                .user(userResponse)
+                .build();
+
         when(userRepository.findByUsername(loginRequest.getUsernameOrEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
-        when(userMapper.mapToResponse(user)).thenReturn(userResponse);
+        when(jwtService.generateToken(user.getUserId(), user.getUsername())).thenReturn(mockToken);
+        when(userMapper.mapToAuthResponse(user, mockToken)).thenReturn(authResponseDTO);
 
-        UserResponseDTO response = authService.login(loginRequest);
+        AuthResponseDTO response = authService.login(loginRequest);
 
         assertThat(response).isNotNull();
-        assertThat(response.getUsername()).isEqualTo("testuser");
+        assertThat(response.getToken()).isEqualTo(mockToken);
+        assertThat(response.getTokenType()).isEqualTo("Bearer");
+        assertThat(response.getUser().getUsername()).isEqualTo("testuser");
+
+        verify(jwtService, times(1)).generateToken(user.getUserId(), user.getUsername());
     }
 
     @Test

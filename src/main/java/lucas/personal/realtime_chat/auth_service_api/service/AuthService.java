@@ -1,6 +1,7 @@
 package lucas.personal.realtime_chat.auth_service_api.service;
 
 import lombok.RequiredArgsConstructor;
+import lucas.personal.realtime_chat.auth_service_api.dto.AuthResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.LoginRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.RegisterRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
@@ -9,6 +10,7 @@ import lucas.personal.realtime_chat.auth_service_api.exception.InvalidCredential
 import lucas.personal.realtime_chat.auth_service_api.exception.UserAlreadyExistsException;
 import lucas.personal.realtime_chat.auth_service_api.mapper.UserMapper;
 import lucas.personal.realtime_chat.auth_service_api.repository.UserRepository;
+import lucas.personal.realtime_chat.auth_service_api.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     private final UserMapper userMapper;
+
+    private final JwtService jwtService;
 
     public UserResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -40,7 +44,7 @@ public class AuthService {
         return userMapper.mapToResponse(savedUser);
     }
 
-    public UserResponseDTO login(LoginRequestDTO request) {
+    public AuthResponseDTO login(LoginRequestDTO request) {
         User user = userRepository.findByUsername(request.getUsernameOrEmail())
                 .or(() -> userRepository.findByEmail(request.getUsernameOrEmail()))
                 .orElseThrow(InvalidCredentialException::new);
@@ -49,6 +53,8 @@ public class AuthService {
             throw new InvalidCredentialException();
         }
 
-        return userMapper.mapToResponse(user);
+        String token = jwtService.generateToken(user.getUserId(), user.getUsername());
+
+        return userMapper.mapToAuthResponse(user, token);
     }
 }
