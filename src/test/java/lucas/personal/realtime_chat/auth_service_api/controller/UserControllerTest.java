@@ -1,16 +1,16 @@
 package lucas.personal.realtime_chat.auth_service_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lucas.personal.realtime_chat.auth_service_api.config.SecurityConfigTest;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserCreateRequestDTO;
 import lucas.personal.realtime_chat.auth_service_api.dto.UserResponseDTO;
 import lucas.personal.realtime_chat.auth_service_api.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,7 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@Import(SecurityConfigTest.class)
+@ContextConfiguration(classes = {UserController.class, GlobalExceptionHandler.class})
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
@@ -65,7 +66,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId").value(1L))
+                .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.username").value("lucas_dev"));
     }
 
@@ -85,7 +86,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/v1/users/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(1L));
+                .andExpect(jsonPath("$.userId").value(1));
     }
 
     @Test

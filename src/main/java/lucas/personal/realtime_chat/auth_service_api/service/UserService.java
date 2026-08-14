@@ -55,6 +55,7 @@ public class UserService {
 
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
